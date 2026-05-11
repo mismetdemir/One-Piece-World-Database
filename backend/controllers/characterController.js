@@ -1,96 +1,132 @@
-let characters = [
-    {
-        id:1,
-        name: "Monkey D. Luffy",
-        affiliation: "Straw Hat Pirates",
-        bounty: 3000000000,
-        status: "Alive"
-    },
-    {
-        id:2,
-        name: "Roronoa Zoro",
-        affiliation: "Straw Hat Pirates",
-        bounty: 1111000000,
-        status: "Alive"
-    }
-];
+const { error } = require("node:console");
+const db = require("../database/db");
+const { validateCharacter } = require("../services/characterService");
+const { stat } = require("node:fs");
+
 
 exports.getAllCharacters = (req, res) => {
-    res.status(200).json(characters);
+    const { search, affiliation, sort } = req.query;
+
+    let sql = "SELECT * FROM characters WHERE 1=1";
+    const params = [];
+
+    if (search) {
+        sql += " AND name LIKE ?";
+        params.push(`%${search}`);
+    }
+
+    if (affiliation) {
+        sql += " AND affiliation = ?";
+        params.push(affiliation);
+    }
+
+    if (sort === "bounty") {
+        sql += " ORDER BY bounty DESC";
+    } else {
+        sql += " ORDER BY id DESC";
+    }
+
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            return res.status(500).json({ message: "Database error", error: err.message });
+        }
+
+        res.status(200).json(rows);
+    })
 };
 
 exports.getCharacterById = (req, res) => {
     const id = Number(req.params.id);
-    const character = characters.find((c) => c.id === id);
+    
+    db.get("SELECT * FROM characters WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            return res.status(500).json({ message: "Database error", error: err.message });
+        }
 
-    if (!character) {
-        return res.status(404).json({ message: "Character not found" });
-    }
+        if (!row) {
+            return res.status(404).json({ message: "Character not found" });
+        }
 
-    res.status(200).json(character);
+        res.status(200).json(row);
+    });
 };
 
 exports.createCharacter = (req, res) => {
     const { name, affiliation, bounty, status } = req.body;
 
-    if (!name || name.trim() === "") {
-        return res.status(400).json({ message: "Character name is required" });
+    const validationError = validateCharacter(req.body);
+
+    if (validationError) {
+        return res.status(400).json({ message: validationError });
     }
 
-    if (bounty < 0) {
-        return res.status(400).json({ message: "Bounty cannot be negative" });
-    }
+    const sql = `
+        INSERT INTO characters (name, affiliation, bounty, status)
+        VALUES (?, ?, ?, ?)
+    `;
 
-    const newCharacter = {
-        id: characters.length + 1,
-        name,
-        affiliation,
-        bounty,
-        status
-    };
+    db.run(sql, [name, affiliation, bounty || 0, status], function (err) {
+        if (err) {
+            return res.status(500).json({ message: "Database error", error: err.message });
+        }
 
-    characters.push(newCharacter);
-    res.status(201).json(newCharacter);
+        res.status(201).json({
+            id: this.lastID,
+            name,
+            affiliation,
+            bounty: bounty || 0,
+            status
+        });
+    });
 };
 
 exports.updateCharacter = (req, res) => {
     const id = Number(req.params.id);
-    const character = characters.find((c) => c.id === id);
-
-    if (!character) {
-        return res.status(404).json({ message: "Character not found" });
-    }
-
     const { name, affiliation, bounty, status } = req.body;
 
-    if (!name || name.trim() === "") {
-        return res.status(400).json({ message: "Character name is required" });
+    const validationError = validateCharacter(req.body);
+
+    if (validationError) {
+        return res.status(400).json({ message: validationError });
     }
 
-    if (!affiliation || affiliation.trim() === "") {
-        return res.status(400).json({ message: "Affiliation is required" });
-    }
+    const sql = `
+        UPDATE characters
+        SET name = ?, affiliation = ?, bounty = ?, status = ?
+        WHERE id = ?
+    `;
 
-    if (bounty < 0) {
-        return res.status(400).json({ message: "Bounty cannot be negative" });
-    }
+    db.run(sql, [name, affiliation, bounty || 0, status, id], function (err) {
+        if (err) {
+            return res.status(500).json({ message: "Database error", error: err.message });
+        }
 
-    character.name = name;
-    character.affiliation = affiliation;
-    character.bounty = bounty;
-    character.status = status;
+        if (this.changes === 0) {
+            return res.status(404).json({ message: "Character not found" });
+        }
 
-    res.status(200).json(character);
+        res.status(200).json({
+            id: Number(id),
+            name,
+            affiliation,
+            bounty: bounty || 0,
+            status
+        });
+    });
 };
 
 exports.deleteCharacter = (req, res) => {
     const id = Number(req.params.id);
-    const characterIndex = characters.findIndex((c) => c.id === id);
-    if (characterIndex === -1) {
-        return res.status(404).json({ message: "Character not found" });
-    }
 
-    characters.splice(characterIndex, 1);
+    db.run("DELETE FROM characters WHERE id = ?", [id], function (err) {
+        if (err) {
+            return res.status(500).json({ message: "Database error", error: err.message });
+        }
 
-    res.status(200).json({ message: "Character deleted successfully" });
+        if (this.changes === 0) {
+            return res.status(404).json({ message: "Character not found" });
+        }
+
+        res.status(200).json({ message: "Character deleted successfully"});
+    });
 };
