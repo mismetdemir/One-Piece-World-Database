@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>One Piece World Database</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>One Piece World Database</h1>
+
+  <form id="characterForm">
+    <input type="text" id="name" placeholder="Character Name" required />
+    <input type="text" id="affiliation" placeholder="Affiliation" required />
+    <input type="number" id="bounty" placeholder="Bounty" />
+    <input type="text" id="status" placeholder="Status" />
+
+    <button type="submit">Add Character</button>
+  </form>
+
+  <h2>Characters</h2>
+  <div id="characterList"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
