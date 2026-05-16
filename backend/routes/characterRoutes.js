@@ -2,11 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const characterController = require("../controllers/characterController");
+const authenticateToken = require("../middleware/authMiddleware");
 
+// Public routes
 router.get("/", characterController.getAllCharacters);
 router.get("/:id", characterController.getCharacterById);
-router.post("/", characterController.createCharacter);
-router.put("/:id", characterController.updateCharacter);
-router.delete("/:id", characterController.deleteCharacter);
+
+// Protected routes
+router.post("/", authenticateToken, characterController.createCharacter);
+router.put("/:id", authenticateToken, characterController.updateCharacter);
+router.delete("/:id", authenticateToken, characterController.deleteCharacter);
 
 module.exports = router;
