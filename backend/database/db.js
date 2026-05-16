@@ -12,12 +12,22 @@ const db = new sqlite.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
+    db.run("PRAGMA foreign_keys = ON");
+
     db.run(`CREATE TABLE IF NOT EXISTS characters (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         affiliation TEXT,
         bounty INTEGER DEFAULT 0,
         status TEXT
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        role TEXT DEFAULT 'user',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 });
 
