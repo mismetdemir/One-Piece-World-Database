@@ -26,9 +26,21 @@ db.serialize(() => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        role TEXT DEFAULT 'user',
+        role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user', 'editor', 'admin')),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS role_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        requested_role TEXT NOT NULL DEFAULT 'editor' CHECK(requested_role IN ('editor')),
+        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        reviewed_by INTEGER,
+        reviewed_at DATETIME,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
+    )`);
 });
 
 module.exports = db;
