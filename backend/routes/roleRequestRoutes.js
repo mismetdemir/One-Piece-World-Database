@@ -1,6 +1,6 @@
 const express = require("express");
 const roleRequestController = require("../controllers/roleRequestController");
-const { authenticateToken } = require("../middleware/authMiddleware");
+const { authenticateToken, authorizeRoles } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -51,5 +51,9 @@ const router = express.Router();
  *         description: Internal server error
  */
 router.post("/", authenticateToken, roleRequestController.createEditorRequest);
+
+router.get("/pending", authenticateToken, authorizeRoles("admin"), roleRequestController.getPendingRequests);
+
+router.put("/:id/review", authenticateToken, authorizeRoles("admin"), roleRequestController.reviewEditorRequest);
 
 module.exports = router;
