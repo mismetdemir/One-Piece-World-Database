@@ -21,7 +21,7 @@ function authenticateToken(req, res, next) {
 function authorizeRoles(...allowedRoles) {
     return (req, res, next) => {
         if (!req.user) {
-            return res.status(401).json{( message: "User is not authenticated." )};
+            return res.status(401).json({ message: "User is not authenticated." });
         }
 
         if (!allowedRoles.includes(req.user.role)) {
