@@ -21,7 +21,7 @@ function findUserByUsernameOrEmail(identifier) {
 function findExistingUser(username, email) {
     return new Promise((resolve, reject) => {
         db.get(
-            "SELECT * FROM users WHERE username = ? OR email = =,?",
+            "SELECT * FROM users WHERE username = ? OR email = ?",
             [username, email],
             (err, user) => {
                 if (err) {
