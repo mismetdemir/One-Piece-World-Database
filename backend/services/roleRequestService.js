@@ -36,7 +36,7 @@ function findPendingRequestByUserId(userId) {
 function insertRoleRequest(userId) {
     return new Promise((resolve, reject) => {
         db.run(
-            "INSER INTO role_requests (user_id, requested_role, status) VALUES (?, ?, ?)",
+            "INSERT INTO role_requests (user_id, requested_role, status) VALUES (?, ?, ?)",
             [userId, "editor", "pending"],
             function (err) {
                 if (err) {
