@@ -37,7 +37,7 @@ function findExistingUser(username, email) {
 function insertUser(username, email, hashedPassword) {
     return new Promise((resolve, reject) => {
         db.run(
-            "INSER INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
+            "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
             [username, email, hashedPassword, "user"],
             function (err) {
                 if (err) {
