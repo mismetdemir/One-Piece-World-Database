@@ -5,6 +5,7 @@ const path = require("path");
 
 const authRoutes = require("./routes/authRoutes");
 const characterRoutes = require("./routes/characterRoutes");
+const roleRequestRoutes = require("./routes/roleRequestRoutes");
 
 const app = express();
 const PORT = process.env.PORT;
@@ -19,4 +20,5 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/characters", characterRoutes);
+app.use("/api/role-requests", roleRequestRoutes);
 app.listen(PORT, () => {console.log(`Server is running on port: ${PORT}`)});
